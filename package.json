@@ -1,0 +1,26 @@
+{
+  "name": "e-learning-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "node-slack": "0.0.7",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/connected-skhuu/e-learning-node.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/connected-skhuu/e-learning-node/issues"
+  },
+  "homepage": "https://github.com/connected-skhuu/e-learning-node#readme"
+}
