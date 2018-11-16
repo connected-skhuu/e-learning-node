@@ -22,7 +22,6 @@ const send_to_slack = ($) => {
 	const title = $title.text().trim();
 	const description = $(descriptionSelector).find('div').eq(2).text().trim()
 	const slack = new Slack( slackConfig.webhook_url );
-	const date = Date.now();
 	
 	slack.send( {
 		text: "Free Packt E-Book",
@@ -32,8 +31,7 @@ const send_to_slack = ($) => {
             "color": "#36a64f",
             "title": title,
             "title_link": "https://www.packtpub.com/packt/offers/free-learning",
-            "text": description,
-            "ts": date
+            "text": description
         }
     ]
 	}
