@@ -1,28 +1,17 @@
 const Slack = require( 'node-slack' );
-const rp = require('request-promise');
-const cheerio = require('cheerio');
+const request = require('request'); //op2
 
-const listing = 'https://www.packtpub.com/packt/offers/free-learning';
-const titleSelector = '.dotd-title h2';
-const descriptionSelector = '.dotd-main-book-summary';
+const offersEndpoint = "https://services.packtpub.com/free-learning-v1/offers?";
+const summaryEndpoint = "https://static.packt-cdn.com/products/"; //+id
+const summaryEndpointSuffix = "/summary";
 
 let slackConfig = {
 	webhook_url: process.env.WEBHOOK_URL
 };
 
-const options = {
-	uri: listing,
-	transform: function (body) {
-			return cheerio.load(body);
-	}
-};
-
-const send_to_slack = ($) => {
-	const $title = $( titleSelector ); 
-	const title = $title.text().trim();
-	const description = $(descriptionSelector).find('div').eq(2).text().trim()
+const send_to_slack = (title, description) => {
 	const slack = new Slack( slackConfig.webhook_url );
-	
+
 	slack.send( {
 		text: "Free Packt E-Book",
     attachments: [
@@ -42,11 +31,38 @@ const send_to_slack = ($) => {
 	} );
 }
 
-rp(options)
-	.then(($) => {
-		send_to_slack($);
-	})
-	.catch((err) => {
-		console.log(err);
+const fetch_new_book = (callback) => {
+	const timeString = "00:00:00.000Z";
+	let currentDate = new Date();
+	let tomorrowDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), (currentDate.getDate() + 1)); //addition will automatically carry over to next month if > 31
+	let todaysDateString = currentDate.toISOString().substring(0, 11); //Only want YYYY-MM-DDT
+	let tomorrowsDateString = tomorrowDate.toISOString().substring(0, 11); //Only want YYYY-MM-DDT
+	let dateQueryString = "dateFrom=" + todaysDateString + timeString + "&dateTo=" + tomorrowsDateString + timeString;
+
+	const finalURL = offersEndpoint + dateQueryString;
+
+	request(finalURL, { json: true }, (err, res, body) => {
+		if (err) { return console.log(err); }
+
+		if(body && body.data && body.data.length > 0) {
+			let productId = body.data[0]['productId'];
+			callback(productId);
+		}
 	});
+}
+
+const fetch_book_details = (productId) => {
+
+	const finalURL = summaryEndpoint + productId + summaryEndpointSuffix;
+	
+	request(finalURL, { json: true }, (err, res, body) => {
+		if (err) { return console.log(err); }
+
+		if(body) {
+			send_to_slack(body['title'], body['oneLiner']);
+		}
+	});
+}
+
+fetch_new_book(fetch_book_details);
 	
